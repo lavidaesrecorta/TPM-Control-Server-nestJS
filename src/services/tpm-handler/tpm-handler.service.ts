@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TrainingSettings, TpmWeights, LearnSession } from 'src/interfaces';
-import { GlobalService } from 'src/global-service/global-service.service';
+import { GlobalService } from 'src/services/global-service/global-service.service';
 import { firstValueFrom, map } from 'rxjs';
 import {
   checkOutputSync,

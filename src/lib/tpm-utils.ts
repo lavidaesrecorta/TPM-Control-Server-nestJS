@@ -1,4 +1,4 @@
-import { GlobalService } from 'src/global-service/global-service.service';
+import { GlobalService } from 'src/services/global-service/global-service.service';
 
 export enum TPM_COMMANDS {
   INITIALIZE = 'init',

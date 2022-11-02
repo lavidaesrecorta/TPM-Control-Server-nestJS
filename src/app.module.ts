@@ -4,8 +4,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ControlpanelController } from './controlpanel/controlpanel.controller';
-import { GlobalService } from './global-service/global-service.service';
-import { TpmHandlerService } from './tpm-handler/tpm-handler.service';
+import { GlobalService } from './services/global-service/global-service.service';
+import { TpmHandlerService } from './services/tpm-handler/tpm-handler.service';
 
 @Module({
   imports: [EventEmitterModule.forRoot(), HttpModule],

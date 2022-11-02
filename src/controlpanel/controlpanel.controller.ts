@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConnectedTpm } from 'src/interfaces/connected-tpm.interface';
-import { GlobalService } from 'src/global-service/global-service.service';
+import { GlobalService } from 'src/services/global-service/global-service.service';
 import { TrainingSettings } from 'src/interfaces/training-settings.interface';
 import { TpmOutput } from 'src/interfaces/tpm-output.interface';
 import { TpmWeights } from 'src/interfaces/tpm-weights.interface';
