@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Global, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TrainingSettings, TpmWeights, LearnSession } from 'src/interfaces';
 import { GlobalService } from 'src/services/global-service/global-service.service';
@@ -119,6 +119,13 @@ export class TpmHandlerService {
       if (checkTpmSync()) {
         console.log('We have achieved syncrhonization.');
       } else {
+        if (
+          GlobalService.learnSession.targetIterCount >=
+          GlobalService.maxIterations
+        ) {
+          console.log('We have failed.');
+          return;
+        }
         this.triggerMassStimulusCalculation();
       }
     }
