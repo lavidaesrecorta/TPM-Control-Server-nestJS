@@ -9,6 +9,7 @@ import {
   checkStageSync,
   checkTpmSync,
   generateRandomStimulus,
+  handleAxiosError,
   LEARNING_RULES,
   TPM_COMMANDS,
   TPM_STATES,
@@ -27,7 +28,7 @@ export class TpmHandlerService {
           map((response) => response.status),
           catchError((e) => {
             console.log('!!!Error while Initializing:');
-            throw new HttpException(e.response.data, e.response.status);
+            return handleAxiosError(e);
           }),
         ),
     );
@@ -50,7 +51,7 @@ export class TpmHandlerService {
           map((response) => response.status),
           catchError((e) => {
             console.log('!!!Error while Stimulating:');
-            throw new HttpException(e.response.data, e.response.status);
+            return handleAxiosError(e);
           }),
         ),
     );
@@ -74,7 +75,7 @@ export class TpmHandlerService {
           map((response) => response.status),
           catchError((e) => {
             console.log('!!!Error while Learning:');
-            throw new HttpException(e.response.data, e.response.status);
+            return handleAxiosError(e);
           }),
         ),
     );
