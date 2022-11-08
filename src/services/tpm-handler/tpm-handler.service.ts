@@ -1,9 +1,9 @@
 import { HttpService } from '@nestjs/axios';
-import { Global, Injectable } from '@nestjs/common';
+import { Global, HttpException, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TrainingSettings, TpmWeights, LearnSession } from 'src/interfaces';
 import { GlobalService } from 'src/services/global-service/global-service.service';
-import { firstValueFrom, map } from 'rxjs';
+import { catchError, firstValueFrom, map } from 'rxjs';
 import {
   checkOutputSync,
   checkStageSync,
@@ -23,7 +23,13 @@ export class TpmHandlerService {
     const response = await firstValueFrom(
       this.httpService
         .post(`http://${ip}/${TPM_COMMANDS.INITIALIZE}`, settings)
-        .pipe(map((response) => response.status)),
+        .pipe(
+          map((response) => response.status),
+          catchError((e) => {
+            console.log('!!!Error while Initializing:');
+            throw new HttpException(e.response.data, e.response.status);
+          }),
+        ),
     );
 
     // console.log(response);
@@ -40,7 +46,13 @@ export class TpmHandlerService {
     const response = await firstValueFrom(
       this.httpService
         .post(`http://${ip}/${TPM_COMMANDS.STIMULATE}`, { stimulus: stimulus })
-        .pipe(map((response) => response.status)),
+        .pipe(
+          map((response) => response.status),
+          catchError((e) => {
+            console.log('!!!Error while Stimulating:');
+            throw new HttpException(e.response.data, e.response.status);
+          }),
+        ),
     );
 
     if (response == 200) {
@@ -58,7 +70,13 @@ export class TpmHandlerService {
         .post(`http://${ip}/${TPM_COMMANDS.TRAIN}`, {
           learningRule: learningRule,
         })
-        .pipe(map((response) => response.status)),
+        .pipe(
+          map((response) => response.status),
+          catchError((e) => {
+            console.log('!!!Error while Learning:');
+            throw new HttpException(e.response.data, e.response.status);
+          }),
+        ),
     );
     const tpmIndex = GlobalService.connectedTpms.findIndex(
       (tpm) => tpm.ip == ip,

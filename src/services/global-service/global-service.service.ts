@@ -6,5 +6,5 @@ import { ConnectedTpm } from 'src/interfaces/connected-tpm.interface';
 export class GlobalService {
   static connectedTpms: ConnectedTpm[];
   static learnSession: LearnSession;
-  static maxIterations = 20;
+  static maxIterations = 1_000_000;
 }
