@@ -1,4 +1,3 @@
-import { HttpException } from '@nestjs/common/exceptions';
 import { GlobalService } from 'src/services/global-service/global-service.service';
 
 export enum TPM_COMMANDS {
@@ -100,25 +99,4 @@ export const checkOutputSync = () => {
     }
   }
   return true;
-};
-
-export const handleAxiosError = (e) => {
-  if (e.response) {
-    // The request was made and the server responded with a status code
-    // that falls out of the range of 2xx
-    console.log(e.response.data);
-    throw new HttpException(e.response.data, e.response.status);
-  } else if (e.request) {
-    // The request was made but no response was received
-    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-    // http.ClientRequest in node.js
-    console.log('Request made, but no response was recieved: ', e.request);
-    throw e;
-  } else {
-    console.log(
-      'Request was not made. An error ocurred while setting up the request:',
-      e.message,
-    );
-    throw e;
-  }
 };

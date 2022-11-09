@@ -1,5 +1,9 @@
 import { HttpService } from '@nestjs/axios';
-import { Global, HttpException, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  NotImplementedException,
+} from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TrainingSettings, TpmWeights, LearnSession } from 'src/interfaces';
 import { GlobalService } from 'src/services/global-service/global-service.service';
@@ -9,15 +13,37 @@ import {
   checkStageSync,
   checkTpmSync,
   generateRandomStimulus,
-  handleAxiosError,
   LEARNING_RULES,
   TPM_COMMANDS,
   TPM_STATES,
 } from 'src/lib/tpm-utils';
+import { SESSION_STATUS } from 'src/interfaces/learn-session.interface';
 
 @Injectable()
 export class TpmHandlerService {
   constructor(private readonly httpService: HttpService) {}
+
+  handleAxiosError = (e) => {
+    if (e.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.log(e.response.data);
+      throw new HttpException(e.response.data, e.response.status);
+    } else if (e.request) {
+      // The request was made but no response was received
+      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+      // http.ClientRequest in node.js
+      console.log('Request made, but no response was recieved: ', e.request);
+      this.healthCheckSingleTpm();
+      throw e;
+    } else {
+      console.log(
+        'Request was not made. An error ocurred while setting up the request:',
+        e.message,
+      );
+      throw e;
+    }
+  };
 
   initializeSingleTpm = async (ip: string, settings: TrainingSettings) => {
     console.log(`Initializing http://${ip}/${TPM_COMMANDS.INITIALIZE}`);
@@ -28,7 +54,7 @@ export class TpmHandlerService {
           map((response) => response.status),
           catchError((e) => {
             console.log('!!!Error while Initializing:');
-            return handleAxiosError(e);
+            return this.handleAxiosError(e);
           }),
         ),
     );
@@ -51,7 +77,7 @@ export class TpmHandlerService {
           map((response) => response.status),
           catchError((e) => {
             console.log('!!!Error while Stimulating:');
-            return handleAxiosError(e);
+            return this.handleAxiosError(e);
           }),
         ),
     );
@@ -75,7 +101,7 @@ export class TpmHandlerService {
           map((response) => response.status),
           catchError((e) => {
             console.log('!!!Error while Learning:');
-            return handleAxiosError(e);
+            return this.handleAxiosError(e);
           }),
         ),
     );
@@ -90,9 +116,16 @@ export class TpmHandlerService {
     }
   };
 
+  healthCheckSingleTpm = async () => {
+    throw new NotImplementedException('Not Implemented');
+  };
+
   triggerMassStimulusCalculation = async () => {
     const settings = GlobalService.learnSession.trainingSettings;
     const stimulus = generateRandomStimulus(settings.k, settings.n);
+    GlobalService.learnSession.iterStimulus = stimulus;
+    if (GlobalService.learnSession.targetStage == TPM_STATES.INITIALIZED)
+      GlobalService.learnSession.initialStimulus = stimulus;
     GlobalService.connectedTpms.forEach((tpm) => {
       this.stimulateAndRunSingleTpm(tpm.ip, stimulus);
     });
@@ -121,6 +154,10 @@ export class TpmHandlerService {
       targetIterCount: -1,
       targetStage: TPM_STATES.INITIALIZED,
       trainingSettings: settings,
+      initialStimulus: [],
+      iterStimulus: [],
+      sessionStatus: SESSION_STATUS.NOT_INITIALIZED,
+      creationDate: Date.now(),
     };
     GlobalService.learnSession = newLearnSession;
   }
