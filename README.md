@@ -8,7 +8,7 @@ NestJS as a companion software for
 
 The development is active, and new features are being developed
 in order to facilitate debugging, and research.
-Some features are yet to be tested, but are implemented and may or may not work.
+Some features are yet to be fully tested.
 
 ### Current features
 
@@ -69,7 +69,7 @@ There are three `learnRules`:
 - 1: Anti-Hebbian learning rule
 - 2: Random-Walk learning rule
 
-After initializing the system, syncronization status is available in the server console.
+After initializing the system, synchronization status is available in the server console.
 
 ## Contributing
 
@@ -77,6 +77,6 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 Please make sure to update tests as appropriate.
 
-## Lessons Learned
+## License
 
 License in discussion. You are explicitly forbidden to redistribute this code without linking to this repository or resell it under any circumstance. You may download, modify and run this code for research purposes only.
