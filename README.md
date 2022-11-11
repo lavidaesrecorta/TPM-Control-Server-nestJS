@@ -1,73 +1,82 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# TPM Nest
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repository contains a control server written in
+NestJS as a companion software for
+[this Tree Parity Machine implementation](https://github.com/lavidaesrecorta/Tree-Parity-Machines).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+The development is active, and new features are being developed
+in order to facilitate debugging, and research.
+Some features are yet to be tested, but are implemented and may or may not work.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Current features
+
+- Multi-Device Sync (Untested for more than two devices).
+- Event-oriented control.
+- Mass stimulation and training
+- On screen logging of iteration events, on stimulation and training.
+
+### Planned features
+
+- Device health-check on timeout.
+- Automatic pause/stop on device fatal error.
+- Push iteration and sync statistics to InfluxDB
+- Change logging system to winston-loki
+- Create Grafana integrations to easily control and change the training parameters.
+- Ability to setup additional serial connections to specific devices with a wired link to the system.
 
 ## Installation
 
-```bash
-$ npm install
-```
-
-## Running the app
+Clone into a folder and install dependencies with yarn.
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+  yarn install
 ```
 
-## Test
+## Usage/Examples
+
+Run the app with
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+yarn run start
 ```
 
-## Support
+The control server must start before the devices, for now the devices
+do not try to reconnect.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Once the app has started, and the devices have been connected, training can be started with the by creating a POST request to the following endpoint:
 
-## Stay in touch
+```
+https://{SERVER_IP}:3000/controlpanel/tpm-init
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+And specify the training parameters in the body of the request with the following structure:
 
-## License
+```json
+{
+  "k": number,
+  "n": number,
+  "l": number,
+  "learnRule": 0 | 1 | 2
+}
+```
 
-Nest is [MIT licensed](LICENSE).
+With `k` hidden units, `n` number of input neurons and `l` range of discrete weights.
+There are three `learnRules`:
+
+- 0: Hebbian learning rule
+- 1: Anti-Hebbian learning rule
+- 2: Random-Walk learning rule
+
+After initializing the system, syncronization status is available in the server console.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## Lessons Learned
+
+License in discussion. You are explicitly forbidden to redistribute this code without linking to this repository or resell it under any circumstance. You may download, modify and run this code for research purposes only.

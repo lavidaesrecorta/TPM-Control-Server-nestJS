@@ -5,6 +5,7 @@ export enum TPM_COMMANDS {
   STIMULATE = 'stimulate-and-calculate',
   RUN = 'calculate',
   TRAIN = 'train',
+  CHECK_HEALTH = 'health-check',
 }
 
 export enum LEARNING_RULES {
@@ -18,6 +19,12 @@ export enum TPM_STATES {
   INITIALIZED = 1,
   CALCULATING = 2,
   LEARNING = 3,
+}
+
+export enum MICROSERVER_ERRORS {
+  RESPONSE_ERROR = 100,
+  NO_RESPONSE = 200,
+  NO_REQUEST = 300,
 }
 
 export const generateRandomStimulus = (k: number, n: number) => {

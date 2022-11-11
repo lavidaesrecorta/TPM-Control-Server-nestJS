@@ -7,4 +7,6 @@ export class GlobalService {
   static connectedTpms: ConnectedTpm[];
   static learnSession: LearnSession;
   static maxIterations = 1_000_000;
+  static maxHealthChecks = 5;
+  static healthCheckDelayMs = 1500;
 }

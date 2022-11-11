@@ -1,9 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import {
-  HttpException,
-  Injectable,
-  NotImplementedException,
-} from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TrainingSettings, TpmWeights, LearnSession } from 'src/interfaces';
 import { GlobalService } from 'src/services/global-service/global-service.service';
@@ -14,6 +10,7 @@ import {
   checkTpmSync,
   generateRandomStimulus,
   LEARNING_RULES,
+  MICROSERVER_ERRORS,
   TPM_COMMANDS,
   TPM_STATES,
 } from 'src/lib/tpm-utils';
@@ -28,20 +25,19 @@ export class TpmHandlerService {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       console.log(e.response.data);
-      throw new HttpException(e.response.data, e.response.status);
+      return MICROSERVER_ERRORS.RESPONSE_ERROR;
     } else if (e.request) {
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
       // http.ClientRequest in node.js
       console.log('Request made, but no response was recieved: ', e.request);
-      this.healthCheckSingleTpm();
-      throw e;
+      return MICROSERVER_ERRORS.NO_RESPONSE;
     } else {
       console.log(
         'Request was not made. An error ocurred while setting up the request:',
         e.message,
       );
-      throw e;
+      return MICROSERVER_ERRORS.NO_REQUEST;
     }
   };
 
@@ -54,7 +50,10 @@ export class TpmHandlerService {
           map((response) => response.status),
           catchError((e) => {
             console.log('!!!Error while Initializing:');
-            return this.handleAxiosError(e);
+            if (this.handleAxiosError(e) == MICROSERVER_ERRORS.NO_RESPONSE) {
+              this.healthCheckSingleTpm(ip, 0);
+            }
+            throw e;
           }),
         ),
     );
@@ -76,8 +75,10 @@ export class TpmHandlerService {
         .pipe(
           map((response) => response.status),
           catchError((e) => {
-            console.log('!!!Error while Stimulating:');
-            return this.handleAxiosError(e);
+            if (this.handleAxiosError(e) == MICROSERVER_ERRORS.NO_RESPONSE) {
+              this.healthCheckSingleTpm(ip, 0);
+            }
+            throw e;
           }),
         ),
     );
@@ -100,8 +101,10 @@ export class TpmHandlerService {
         .pipe(
           map((response) => response.status),
           catchError((e) => {
-            console.log('!!!Error while Learning:');
-            return this.handleAxiosError(e);
+            if (this.handleAxiosError(e) == MICROSERVER_ERRORS.NO_RESPONSE) {
+              this.healthCheckSingleTpm(ip, 0);
+            }
+            throw e;
           }),
         ),
     );
@@ -116,8 +119,37 @@ export class TpmHandlerService {
     }
   };
 
-  healthCheckSingleTpm = async () => {
-    throw new NotImplementedException('Not Implemented');
+  healthCheckSingleTpm = async (ip: string, checkNumber: number) => {
+    console.log(
+      `Checking health for http://${ip}/${TPM_COMMANDS.CHECK_HEALTH}`,
+    );
+    const response = await firstValueFrom(
+      this.httpService.get(`http://${ip}/${TPM_COMMANDS.CHECK_HEALTH}`).pipe(
+        map((response) => response.status),
+        catchError((e) => {
+          if (this.handleAxiosError(e) == MICROSERVER_ERRORS.NO_RESPONSE) {
+            if (checkNumber > GlobalService.maxHealthChecks) {
+              console.log(
+                `The Device [${ip}] has been disconnected after [${checkNumber}] failed reconnection attempts.`,
+              );
+              throw e;
+            }
+            console.log(
+              `No response from device [${ip}], retrying in ${GlobalService.healthCheckDelayMs} miliseconds.`,
+            );
+            this.healthCheckSingleTpm(ip, checkNumber + 1);
+          }
+          throw e;
+        }),
+      ),
+    );
+
+    if (response == 200) {
+      console.log(`[${ip}]: Got health check response!`);
+    } else {
+      console.log('Error while checking health: ');
+      console.log(response);
+    }
   };
 
   triggerMassStimulusCalculation = async () => {
